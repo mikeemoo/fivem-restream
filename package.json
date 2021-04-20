@@ -3,5 +3,19 @@
   "version": "1.0.0",
   "main": "index.js",
   "author": "Mike Franklin <293276+mikeemoo@users.noreply.github.com>",
-  "license": "MIT"
+  "license": "MIT",
+  "scripts": {
+    "dev": "webpack --watch"
+  },
+  "devDependencies": {
+    "webpack": "^5.34.0",
+    "webpack-cli": "^4.6.0"
+  },
+  "dependencies": {
+    "@citizenfx/http-wrapper": "^0.2.2",
+    "dxt-js": "^0.0.3",
+    "image-pixels": "^2.2.2",
+    "koa": "^2.13.1",
+    "webpack-node-externals": "^2.5.2"
+  }
 }

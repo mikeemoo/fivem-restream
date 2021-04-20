@@ -1,0 +1,9 @@
+//! Use a fast but low quality colour compressor.
+
+//! Use a perceptual metric for colour error (the default).
+
+//! Use a slow but high quality colour compressor (the default).
+
+//! Use a uniform metric for colour error.
+
+//! Weight the colour by alpha during cluster fit (disabled by default).
