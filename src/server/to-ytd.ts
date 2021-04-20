@@ -147,7 +147,7 @@ export default async (ddsBuffer: Buffer) => {
   //TextureDictionary:Unknown_4h:Base
   output.writeUInt32LE(1);
   //TextureDictionary:PagesInfoPointer:Base
-  output.writeUInt32LE(1342178048);
+  output.writeLong(1342178048);
   //TextureDictionary:Unknown_10h
   output.writeUInt32LE(0);
   //TextureDictionary:Unknown_14h
@@ -157,25 +157,25 @@ export default async (ddsBuffer: Buffer) => {
   //TextureDictionary:Unknown_1Ch
   output.writeUInt32LE(0);
   //TextureDictionary:TextureNameHashes:EntriesPointer
-  output.writeUInt32LE(1342177408);
+  output.writeLong(1342177408);
   //TextureDictionary:TextureNameHashes:EntriesCount
-  output.writeUInt32LE(1);
+  output.writeUInt16LE(1);
   //TextureDictionary:TextureNameHashes:EntriesCapacity
-  output.writeUInt32LE(1);
+  output.writeUInt16LE(1);
   //TextureDictionary:TextureNameHashes:0
   output.writeUInt32LE(0);
   //TextureDictionary:Textures:EntriesPointer
-  output.writeUInt32LE(1342177536);
+  output.writeLong(1342177536);
   //TextureDictionary:Textures:EntriesCount
-  output.writeUInt32LE(1);
+  output.writeUInt16LE(1);
   //TextureDictionary:Textures:EntriesCapacity
-  output.writeUInt32LE(1);
+  output.writeUInt16LE(1);
   //TextureDictionary:Textures:0
   output.writeUInt32LE(0);
   //Array uint
   output.writeUInt32LE(232298502);
   //data_pointers:0
-  output.writeUInt32LE(1342177664);
+  output.writeLong(1342177664);
   //TextureDX11:Base:VFT
   output.writeUInt32LE(1080137272);
   //TextureDX11:Base:Unknown_4h
@@ -215,21 +215,21 @@ export default async (ddsBuffer: Buffer) => {
   //TextureDX11:Unknown_4Ch
   output.writeUInt32LE(0);
   //TextureDX11:Width
-  output.writeUInt32LE(1024);
+  output.writeUInt16LE(1024);
   //TextureDX11:Height
-  output.writeUInt32LE(1024);
+  output.writeUInt16LE(1024);
   //TextureDX11:Unknown_54h
-  output.writeUInt32LE(1);
+  output.writeUInt16LE(1);
   //TextureDX11:Stride
-  output.writeUInt32LE(512);
+  output.writeUInt16LE(512);
   //TextureDX11:Format
   output.writeUInt32LE(827611204);
   //TextureDX11:Unknown_5Ch
-  output.writeUInt32LE(0);
+  output.writeUInt8(0);
   //TextureDX11:Levels
-  output.writeUInt32LE(1);
+  output.writeUInt8(1);
   //TextureDX11:Unknown_5Eh
-  output.writeUInt32LE(0);
+  output.writeUInt16LE(0);
   //TextureDX11:Unknown_60h
   output.writeUInt32LE(0);
   //TextureDX11:Unknown_64h
@@ -239,7 +239,7 @@ export default async (ddsBuffer: Buffer) => {
   //TextureDX11:Unknown_6Ch
   output.writeUInt32LE(0);
   //TextureDX11:DataPointer
-  output.writeUInt32LE(1610612736);
+  output.writeLong(1610612736);
   //TextureDX11:Unknown_78h
   output.writeUInt32LE(0);
   //TextureDX11:Unknown_7Ch
@@ -259,11 +259,11 @@ export default async (ddsBuffer: Buffer) => {
   //PagesInfo:Unknown_4h
   output.writeUInt32LE(0);
   //PagesInfo:SystemPagesCount
-  output.writeUInt32LE(1);
+  output.writeUInt8(1);
   //PagesInfo:GraphicsPagesCount
-  output.writeUInt32LE(1);
+  output.writeUInt8(1);
   //PagesInfo:Unknown_Ah
-  output.writeUInt32LE(0);
+  output.writeUInt16LE(0);
   //PagesInfo:Unknown_Ch
   output.writeUInt32LE(0);
   //PagesInfo:Unknown_10h
@@ -273,7 +273,7 @@ export default async (ddsBuffer: Buffer) => {
   //ResourceFile:0x37435352,
   output.writeUInt32LE(0x37435352);
   //ResourceFile:Version,
-  output.writeUInt32LE(13);
+  output.writeInt32LE(13);
   //ResourceFile:SystemFlags,
   output.writeUInt32LE(131072);
   //ResourceFile:GraphicsFlags,
