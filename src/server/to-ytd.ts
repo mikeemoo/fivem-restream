@@ -1,237 +1,166 @@
-// import fs from "fs";
-// import path from "path";
+import fs from "fs";
+import path from "path";
 
-// const RESOURCE_IDENT = 0x37435352;
-// const VERSION = 13;
-// const SYSTEM_FLAGS = 131072;
-// const GRAPHICS_FLAGS = 3489792006;
+const RESOURCE_IDENT = 0x37435352;
+const VERSION = 13;
+const SYSTEM_FLAGS = 131072;
+const GRAPHICS_FLAGS = 3489792006;
 
-// class Texture {
-//   VFT = 0x40619638;
-//   Unknown_4h = 0x00000001;
-//   Unknown_8h = 0x00000000;
-//   Unknown_Ch = 0x00000000;
-//   Unknown_10h = 0x00000000;
-//   Unknown_14h = 0x00000000;
-//   Unknown_18h = 0x00000000;
-//   Unknown_1Ch = 0x00000000;
-//   Unknown_20h = 0x00000000;
-//   Unknown_24h = 0x00000000;
-//   Unknown_30h = 0x00800001; // ??
-//   Unknown_34h = 0x00000000;
-//   Unknown_38h = 0x00000000;
-//   Unknown_3Ch = 0x00000000;
-//   Unknown_40h = 0x00000000; // ??
-//   Unknown_44h = 0x00000000;
-//   Unknown_48h = 0x00000000;
-//   Unknown_4Ch = 0x00000000;
-//   Unknown_54h = 0x0001;
-//   Unknown_5Ch = 0x00;
-//   Unknown_5Eh = 0x0000;
-//   Unknown_60h = 0x00000000;
-//   Unknown_64h = 0x00000000;
-//   Unknown_68h = 0x00000000;
-//   Unknown_6Ch = 0x00000000;
-//   Unknown_78h = 0x00000000;
-//   Unknown_7Ch = 0x00000000;
-//   Unknown_80h = 0x00000000;
-//   Unknown_84h = 0x00000000;
-//   Unknown_88h = 0x00000000;
-//   Unknown_8Ch = 0x00000000;
-//   constructor () {
+type Block = {
+  Length: number;
+  Position: number;
+}
 
-//   }
-//   setData (data) {
-//     this.data = data;
-//   }
+const BASE_SIZE = 0x2000;
 
-//   write () {
-//     // from base
-//     this.NamePointer = (ulong)(this.Name?.Position ?? 0);
+const assignPositions = (blocks: Block[], basePosition: number) => {
+  const largestBlockSize = [...blocks].sort((a, b) => b.Length - a.Length)[0].Length;
+  let currentPageSize = BASE_SIZE;
+  while (currentPageSize < largestBlockSize) {
+    currentPageSize *= 2;
+  }
+  let currentPageCount = 0;
+  let currentPosition = 0;
+  while (true) {
+    for (let block of blocks) {
+      const maxSpace = currentPageCount * currentPageSize - currentPosition;
+      if (maxSpace < (block.Length + 64)) {
+          currentPageCount++;
+          currentPosition = currentPageSize * (currentPageCount - 1);
+      }
+      block.Position = basePosition + currentPosition;
+      currentPosition += block.Length + 64;
+      if ((currentPosition % 64) != 0) {
+        currentPosition += (64 - (currentPosition % 64));
+      }
+    }
+    // break if everything fits...
+    if (currentPageCount < 128)
+      break;
 
-//     // write structure data
-//     writer.Write(this.VFT);
-//     writer.Write(this.Unknown_4h);
-//     writer.Write(this.Unknown_8h);
-//     writer.Write(this.Unknown_Ch);
-//     writer.Write(this.Unknown_10h);
-//     writer.Write(this.Unknown_14h);
-//     writer.Write(this.Unknown_18h);
-//     writer.Write(this.Unknown_1Ch);
-//     writer.Write(this.Unknown_20h);
-//     writer.Write(this.Unknown_24h);
-//     writer.Write(this.NamePointer);
-//     writer.Write(this.Unknown_30h);
-//     writer.Write(this.Unknown_34h);
-//     writer.Write(this.Unknown_38h);
-//     writer.Write(this.Unknown_3Ch);
-
-//     // 
-//     this.DataPointer = (ulong)this.Data.Position;
-
-//     // write structure data
-//     writer.Write(this.Unknown_40h);
-//     writer.Write(this.Unknown_44h);
-//     writer.Write(this.Unknown_48h);
-//     writer.Write(this.Unknown_4Ch);
-//     writer.Write(this.Width);
-//     writer.Write(this.Height);
-//     writer.Write(this.Unknown_54h);
-//     writer.Write(this.Stride);
-//     writer.Write(this.Format);
-//     writer.Write(this.Unknown_5Ch);
-//     writer.Write(this.Levels);
-//     writer.Write(this.Unknown_5Eh);
-//     writer.Write(this.Unknown_60h);
-//     writer.Write(this.Unknown_64h);
-//     writer.Write(this.Unknown_68h);
-//     writer.Write(this.Unknown_6Ch);
-//     writer.Write(this.DataPointer);
-//     writer.Write(this.Unknown_78h);
-//     writer.Write(this.Unknown_7Ch);
-//     writer.Write(this.Unknown_80h);
-//     writer.Write(this.Unknown_84h);
-//     writer.Write(this.Unknown_88h);
-//     writer.Write(this.Unknown_8Ch);
-//   }
-// }
-
-// class TextureDictionary {
-//   VFT; ?
-//   Unknown_4h; ?
-//   PagesInfoPointer; ?
-//   Unknown_10h = 0x00000000
-//   Unknown_14h = 0x00000000
-//   Unknown_18h = 0x00000001
-//   Unknown_1Ch = 0x00000000
-//   constructor () {
-//     this.TextureNameHashes = new ResourceSimpleList64<uint_r>();
-//     this.Textures = new ResourcePointerList64<TextureDX11>();
-//   }
-
-//   write () {
-//     // from base
-//     writer.Write(this.VFT);
-//     writer.Write(this.Unknown_4h);
-//     writer.Write(this.PagesInfoPointer);
-//     // write structure data
-//     writer.Write(this.Unknown_10h);
-//     writer.Write(this.Unknown_14h);
-//     writer.Write(this.Unknown_18h);
-//     writer.Write(this.Unknown_1Ch);
-//     writer.WriteBlock(this.TextureNameHashes);
-//     writer.WriteBlock(this.Textures);
-//   }
-
-// }
-// class TextureDictionaryFileWrapper_GTA5_pc {
-//   VFT = 0x40570fd0;
-//   Unknown_4h = 0x00000001;
-//   Unknown_10h = 0x00000000;
-//   Unknown_14h = 0x00000000;
-//   Unknown_18h = 0x00000001;
-//   Unknown_1Ch = 0x00000000;
-//   constructor() {
-//     textureDictionary = new TextureDictionary();
-//     textureDictionary.TextureNameHashes.Entries = new ResourceSimpleArray<uint_r>();
-//     textureDictionary.Textures.Entries = new ResourcePointerArray64<TextureDX11>();
-//     textureDictionary.Textures.Add(texture);
-//   }
-// }
-
-// export default async (ddsBuffer: Buffer) => {
+    currentPageSize *= 2;
+  }
   
-//   const ytd = Buffer.alloc(10000, 0, 'binary');
+  return {
+    pageSize: currentPageSize,
+    pageCount: currentPageCount
+  }
+}
 
-//   const rootPath = GetResourcePath(GetCurrentResourceName());
-//   const sample = fs.readFileSync(path.join(rootPath, `samples/created-with-texturetoolkit.ytd`));
+export default async (ddsBuffer: Buffer) => {
+  
 
-//   const textureDictionaryFile = new TextureDictionaryFileWrapper_GTA5_pc();
-//   textureDictionaryFile.Save(fileName);
+  const rootPath = GetResourcePath(GetCurrentResourceName());
 
-//   let offset = 0;
-//   ytd.writeUInt32LE(RESOURCE_IDENT, offset++ * 4);
-//   ytd.writeUInt32LE(VERSION, offset++ * 4);
-//   ytd.writeUInt32LE(SYSTEM_FLAGS, offset++ * 4);
-//   ytd.writeUInt32LE(GRAPHICS_FLAGS, offset++ * 4);
+  //ResourceFile_GTA5_pc:138
+  const ytd = Buffer.alloc(16, 0, 'binary');
+  let offset = 0;
 
-//   for (let i = 0; i < 32; i++) {
-//     console.log(`${Math.floor(i / 4)}: ${sample[i]} ${ytd[i]}`);
-//   }
+  ytd.writeUInt32LE(RESOURCE_IDENT, offset++ * 4);
+  ytd.writeUInt32LE(VERSION, offset++ * 4);
+  ytd.writeUInt32LE(SYSTEM_FLAGS, offset++ * 4);
+  ytd.writeUInt32LE(GRAPHICS_FLAGS, offset++ * 4);
 
-//   return ddsBuffer;
-// }
+  
+  //ResourceFile_GTA5_pc:215 getBlocks
+  const graphicBlocks = [
+    //TextureData_GTA5_pc
+    {
+      FullData: [],
+      Length: 524288,
+      Position: 0
+    }
+  ]
+  const systemBlocks = [
+    //TextureDictionary
+    { 
+      Length: 64,
+      Position: 0,
+      Unknown_18h: 1,
+      Unknown_4h: 1,
+      VFT: 1079447504,
+      PagesInfo: {
+        // see below
+      }
+    },
+    //ResourceSimpleArray<uint_r>
+    {
+      Length: 4,
+      Position: 0,
+      Data: [{
+        Length: 4,
+        Value: 232298502
+      }]
+    },
+    //ResourcePointerArray64<TextureDX11>
+    { 
+      Length: 8,
+      Position: 0,
+      data_items: [
+        {
+          // see below
+        }
+      ],
+      data_pointers: null
+    },
+    //TextureDX11
+    {
+      VFT: 1080137272,
+      Format: 827611204,
+      Height: 1024,
+      Width: 1024,
+      Length: 144,
+      Position: 0,
+      Levels: 1,
+      Name: {
+        // see below
+      },
+      Stride: 512,
+      Unknown_4h: 1,
+      Unknown_30h: 8388609,
+      Unknown_54h: 1
+    },
+    //string_r
+    {
+      Length: 19,
+      Value: "converted-from-jpg",
+      Position: 0
+    },
+    //PagesInfo_GTA5_pc
+    { 
+      Length: 20,
+      Position: 0
+    },
+  ];
 
-// const textureDictionaryFile: TextureDictionaryFileWrapper_GTA5_pc = {
-//   textureDictionary (TextureDictionary): {
-//     length: 64,
-//     PagesInfo (PagesInfo_GTA5_pc): {
-//       GraphicsPagesCount: 1,
-//       Length: 20,
-//       SystemPagesCount: 1,
-//       Unknowns: 0,
-//       position: 1342178048
-//     },
-//     PagesInfoPointer: 1342178048,
-//     Position: 1342177280,
-//     TextureNameHashes (ResourceSimpleList64): {
-//       Entries (ResourceSimpleArray): {
-//         Count: 1,
-//         Length: 4,
-//         Position: 1342177408,
-//         Data: [{
-//           Length: 4,
-//           Position: 1342177408,
-//           Value: 232298502
-//         }]
-//       },
-//       Textures (ResourcePointerList64<TextureDX11>): {
-//         Entries (ResourcePointerArray64<TextureDX11>): {
-//           Count: 1,
-//           Length: 8,
-//           Position: 1342177536,
-//           data_items (TextureDX11): [{
-//             Data (TextureData_GTA5_pc): {
-//               FullData (byte[]): [],
-//               Length: 524288,
-//               Position: 1610612736
-//             },
-//             DataPointer: 1610612736,
-//             Format: 827611204,
-//             Height: 1024,
-//             Width: 1024,
-//             Length: 144,
-//             Levels: 1,
-//             Name: {
-//               Length: 19,
-//               Position: 1342177920,
-//               value: "converted-from-jpg"
-//             },
-//             NamePointer: 1342177920,
-//             Position: 1342177664,
-//             Stride: 512,
-//             Unknown_30h: 8388609,
-//             Unknown_4h: 1,
-//             Unknown_54h: 1,
-//             VFT: 1080137272,
-//           }],
-//           data_pointers: [1342177664]
-//         },
-//         EntriesCapacity: 1,
-//         EntriesCount: 1,
-//         EntriesPointer: 1342177536,
-//         Length: 16,
-//         Position: 1342177328
-//       },
-//       EntriesCapacity: 1,
-//       EntriesCount: 1,
-//       EntriesPointer: 1342177408,
-//       Length: 16,
-//       Position: 1342177312
-//     },
-//     Unknown18h: 1,
-//     Unknown4h: 1,
-//     VFT: 1079447504,
-//     Position: 1342177280
-//   }
-// }
+  //ResourceFile_GTA5_pc:219
+  const { pageSize: systemPageSize, pageCount: systemPageCount } = assignPositions(systemBlocks, 0x50000000);
+  //ResourceFile_GTA5_pc:223
+  const { pageSize: graphicPageSize, pageCount: graphicPageCount } = assignPositions(graphicBlocks, 0x60000000);
+  
+  //ResourceFile_GTA5_pc:228
+  const fileBase = {
+    PagesInfo: {
+      SystemPagesCount: systemPageCount,
+      GraphicsPagesCount: graphicPageCount
+    }
+  }
+
+  // Some complicated shit going on here with the resource writer and stream positions. I haven't reflect that in this yet.
+
+  const resourceWriter = {
+    Position: 0
+  };
+
+  //ResourceFile_GTA5_pc:244-237
+  for (let block of [...systemBlocks, ...graphicBlocks]) {
+    resourceWriter.Position = block.Position;
+    let blockBefore = block.Position;
+    //block.write(resourceWriter);
+    if ((block.Position - blockBefore) != block.Length) {
+        throw new Error("error in system length");
+    }
+  }
+
+  return ddsBuffer;
+}
