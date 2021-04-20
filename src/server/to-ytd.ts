@@ -53,15 +53,7 @@ const assignPositions = (blocks: Block[]) => {
 export default async (ddsBuffer: Buffer) => {
   
 
-  const rootPath = GetResourcePath(GetCurrentResourceName());
-
-  //ResourceFile_GTA5_pc:138
-  const ytd = Buffer.alloc(16, 0, 'binary');
-
-  ytd.writeUInt32LE(RESOURCE_IDENT, 0);
-  ytd.writeUInt32LE(VERSION,        4);
-  ytd.writeUInt32LE(SYSTEM_FLAGS,   8);
-  ytd.writeUInt32LE(GRAPHICS_FLAGS, 12);
+  const rootPath = GetResourcePath && GetCurrentResourceName ? GetResourcePath(GetCurrentResourceName()) : __dirname;
 
   
   //ResourceFile_GTA5_pc:215 getBlocks
@@ -140,238 +132,140 @@ export default async (ddsBuffer: Buffer) => {
   //ResourceFile_GTA5_pc:223
   const { pageSize: graphicPageSize, pageCount: graphicPageCount } = assignPositions(graphicBlocks);
   
+  const sample = Buffer.from(fs.readFileSync(path.join(rootPath, "/samples/without-compression.ytd")));
+
+  const debug = (buffer: any, label: string, offset: number, length: number) => {
+    console.log(`${label} (mine):   ${[...Array(length)].map((_, i) => buffer[offset + i].toString(16)).join(", ")}`);
+    console.log(`${label} (theirs): ${[...Array(length)].map((_, i) => sample[offset + 16 + i].toString(16)).join(", ")}`);
+  }
+
+  const createWriter = (buffer) => {
+    let offset = 0;
+    return {
+      write: (data: any, label: string) => {
+        
+        buffer.write(data, offset);
+        debug(buffer, label, offset, data.length);
+        offset += data.length;
+      },
+      writeUInt8: (data: number, label: string) => {
+        buffer.writeUInt8(data, offset);
+        debug(buffer, label, offset, 1);
+        offset++;
+      },
+      writeUInt16LE: (data: number, label: string) => {
+        buffer.writeUInt16LE(data, offset);
+        debug(buffer, label, offset, 2);
+        offset += 2;
+      },
+      writeUInt32LE: (data: number, label: string) => {
+        buffer.writeUInt32LE(data, offset);
+        debug(buffer, label, offset, 4);
+        offset += 4;
+      },
+      writeUInt64LE: (data: number, label: string) => {
+        buffer.writeUInt32LE(0, offset);
+        offset += 4;
+        buffer.writeUInt32LE(0, offset);
+        offset += 4;
+        debug(buffer, label, offset, 8);
+      }
+    }
+
+  }
 
   const header = Buffer.alloc(16, 0, 'binary');
-  //ResourceFile:0x37435352,
   header.writeUInt32LE(0x37435352, 0);
-  //ResourceFile:Version,
   header.writeInt32LE(13, 4);
-  //ResourceFile:SystemFlags,
   header.writeUInt32LE(131072, 8);
-  //ResourceFile:GraphicsFlags,
   header.writeUInt32LE(3489792006, 12);
 
   const output = Buffer.alloc(10000, 0, 'binary');
 
-  let offset = 0;
-  //TextureDictionary:VFT:Base
-  output.writeUInt32LE(1079447504, offset);
-  offset += 4;
-  //TextureDictionary:Unknown_4h:Base
-  output.writeUInt32LE(1, offset);
-  offset += 4;
-  //TextureDictionary:PagesInfoPointer:Base
-  //output.writeLong(1342178048);
-    output.writeUInt32LE(0, offset);
-    offset += 4;
-    output.writeUInt32LE(0, offset);
-    offset += 4;
-  //TextureDictionary:Unknown_10h
-  output.writeUInt32LE(0, offset);
-  offset += 4;
-  //TextureDictionary:Unknown_14h
-  output.writeUInt32LE(0, offset);
-  offset += 4;
-  //TextureDictionary:Unknown_18h
-  output.writeUInt32LE(1, offset);
-  offset += 4;
-  //TextureDictionary:Unknown_1Ch
-  output.writeUInt32LE(0, offset);
-  offset += 4;
-  //TextureDictionary:TextureNameHashes:EntriesPointer
-  //output.writeLong(1342177408);
-  output.writeUInt32LE(0, offset);
-  offset += 4;
-  output.writeUInt32LE(0, offset);
-  offset += 4;
-  //TextureDictionary:TextureNameHashes:EntriesCount
-  output.writeUInt16LE(1, offset);
-  offset += 2;
-  //TextureDictionary:TextureNameHashes:EntriesCapacity
-  output.writeUInt16LE(1, offset);
-  offset += 2;
-  //TextureDictionary:TextureNameHashes:0
-  output.writeUInt32LE(0, offset);
-  offset += 4;
-  //TextureDictionary:Textures:EntriesPointer
-  //output.writeLong(1342177536);
-    output.writeUInt32LE(0, offset);
-    offset += 4;
-    output.writeUInt32LE(0, offset);
-    offset += 4;
-  //TextureDictionary:Textures:EntriesCount
-  output.writeUInt16LE(1, offset);
-  offset += 2;
-  //TextureDictionary:Textures:EntriesCapacity
-  output.writeUInt16LE(1, offset);
-  offset += 2;
-  //TextureDictionary:Textures:0
-  output.writeUInt32LE(0, offset);
-  offset += 4;
-  //Array uint
-  output.writeUInt32LE(232298502, offset);
-  offset += 4;
-  //data_pointers:0
-  //output.writeLong(1342177664);
-    output.writeUInt32LE(0, offset);
-    offset += 4;
-    output.writeUInt32LE(0, offset);
-    offset += 4;
-  //TextureDX11:Base:VFT
-  output.writeUInt32LE(1080137272, offset);
-  offset += 4;
-  //TextureDX11:Base:Unknown_4h
-  output.writeUInt32LE(1, offset);
-  offset += 4;
-  //TextureDX11:Base:Unknown_4h
-  output.writeUInt32LE(0, offset);
-  offset += 4;
-  //TextureDX11:Base:Unknown_Ch
-  output.writeUInt32LE(0, offset);
-  offset += 4;
-  //TextureDX11:Base:Unknown_10h
-  output.writeUInt32LE(0, offset);
-  offset += 4;
-  //TextureDX11:Base:Unknown_14h
-  output.writeUInt32LE(0, offset);
-  offset += 4;
-  //TextureDX11:Base:Unknown_18h
-  output.writeUInt32LE(0, offset);
-  offset += 4;
-  //TextureDX11:Base:Unknown_1Ch
-  output.writeUInt32LE(0, offset);
-  offset += 4;
-  //TextureDX11:Base:Unknown_20h
-  output.writeUInt32LE(0, offset);
-  offset += 4;
-  //TextureDX11:Base:Unknown_24h
-  output.writeUInt32LE(0, offset);
-  offset += 4;
-  //TextureDX11:Base:NamePointer
-  output.writeUInt32LE(1342177920, offset);
-  offset += 4;
-  //TextureDX11:Base:Unknown_30h
-  output.writeUInt32LE(8388609, offset);
-  offset += 4;
-  //TextureDX11:Base:Unknown_34h
-  output.writeUInt32LE(0, offset);
-  offset += 4;
-  //TextureDX11:Base:Unknown_38h
-  output.writeUInt32LE(0, offset);
-  offset += 4;
-  //TextureDX11:Base:Unknown_3Ch
-  output.writeUInt32LE(0, offset);
-  offset += 4;
-  //TextureDX11:Unknown_40h
-  output.writeUInt32LE(0, offset);
-  offset += 4;
-  //TextureDX11:Unknown_44h
-  output.writeUInt32LE(0, offset);
-  offset += 4;
-  //TextureDX11:Unknown_48h
-  output.writeUInt32LE(0, offset);
-  offset += 4;
-  //TextureDX11:Unknown_4Ch
-  output.writeUInt32LE(0, offset);
-  offset += 4;
-  //TextureDX11:Width
-  output.writeUInt16LE(1024, offset);
-  offset += 2;
-  //TextureDX11:Height
-  output.writeUInt16LE(1024, offset);
-  offset += 4;
-  //TextureDX11:Unknown_54h
-  output.writeUInt16LE(1, offset);
-  offset += 2;
-  //TextureDX11:Stride
-  output.writeUInt16LE(512, offset);
-  offset += 2;
-  //TextureDX11:Format
-  output.writeUInt32LE(827611204, offset);
-  offset += 4;
-  //TextureDX11:Unknown_5Ch
-  output.writeUInt8(0, offset);
-  offset += 1;
-  //TextureDX11:Levels
-  output.writeUInt8(1, offset);
-  offset += 1;
-  //TextureDX11:Unknown_5Eh
-  output.writeUInt16LE(0, offset);
-  offset += 2;
-  //TextureDX11:Unknown_60h
-  output.writeUInt32LE(0, offset);
-  offset += 4;
-  //TextureDX11:Unknown_64h
-  output.writeUInt32LE(0, offset);
-  offset += 4;
-  //TextureDX11:Unknown_68h
-  output.writeUInt32LE(0, offset);
-  offset += 4;
-  //TextureDX11:Unknown_6Ch
-  output.writeUInt32LE(0, offset);
-  offset += 4;
-  //TextureDX11:DataPointer
-  //output.writeLong(1610612736);
-    output.writeUInt32LE(0, offset);
-    offset += 4;
-    output.writeUInt32LE(0, offset);
-    offset += 4;
-  //TextureDX11:Unknown_78h
-  output.writeUInt32LE(0, offset);
-  offset += 4;
-  //TextureDX11:Unknown_7Ch
-  output.writeUInt32LE(0, offset);
-  offset += 4;
-  //TextureDX11:Unknown_80h
-  output.writeUInt32LE(0, offset);
-  offset += 4;
-  //TextureDX11:Unknown_84h
-  output.writeUInt32LE(0, offset);
-  offset += 4;
-  //TextureDX11:Unknown_88h
-  output.writeUInt32LE(0, offset);
-  offset += 4;
-  //TextureDX11:Unknown_8Ch
-  output.writeUInt32LE(0, offset);
-  offset += 4;
+  const writer = createWriter(output);
+
+  writer.writeUInt32LE(1079447504, "TextureDictionary:VFT:Base");
+  writer.writeUInt32LE(1, "TextureDictionary:Unknown_4h:Base");
+  writer.writeUInt64LE(1342178048, "TextureDictionary:PagesInfoPointer:Base");
+  writer.writeUInt32LE(0, "TextureDictionary:Unknown_10h");
+  writer.writeUInt32LE(0, "TextureDictionary:Unknown_14h");
+  // already going wrong around here somewhere
+  writer.writeUInt32LE(1, "TextureDictionary:Unknown_18h");
+  writer.writeUInt32LE(0, "TextureDictionary:Unknown_1Ch");
+  writer.writeUInt64LE(0, "TextureDictionary:PagesInfoPointer:Base");
+  writer.writeUInt16LE(1, "TextureDictionary:TextureNameHashes:EntriesCount");
+  writer.writeUInt16LE(1, "TextureDictionary:TextureNameHashes:EntriesCapacity");
+  writer.writeUInt32LE(0, "TextureDictionary:TextureNameHashes:0");
+  writer.writeUInt64LE(0, "TextureDictionary:Textures:EntriesPointer");
+  writer.writeUInt16LE(1, "TextureDictionary:Textures:EntriesCount");
+  writer.writeUInt16LE(1, "TextureDictionary:Textures:EntriesCapacity");
+  writer.writeUInt32LE(1, "TextureDictionary:Textures:0");
+  writer.writeUInt32LE(232298502, "Array uint");
+  writer.writeUInt64LE(0, "data_pointers:0");
+  writer.writeUInt32LE(1080137272, "TextureDX11:Base:VFT");
+  writer.writeUInt32LE(1, "TextureDX11:Base:Unknown_4h");
+  writer.writeUInt32LE(0, "TextureDX11:Base:Unknown_8h");
+  writer.writeUInt32LE(0, "TextureDX11:Base:Unknown_Ch");
+  writer.writeUInt32LE(0, "TextureDX11:Base:Unknown_10h");
+  writer.writeUInt32LE(0, "TextureDX11:Base:Unknown_14h");
+  writer.writeUInt32LE(0, "TextureDX11:Base:Unknown_18h");
+  writer.writeUInt32LE(0, "TextureDX11:Base:Unknown_1Ch");
+  writer.writeUInt32LE(0, "TextureDX11:Base:Unknown_20h");
+  writer.writeUInt32LE(0, "TextureDX11:Base:Unknown_24h");
+  writer.writeUInt64LE(0, "TextureDX11:Base:NamePointer");
+  writer.writeUInt32LE(8388609, "TextureDX11:Base:Unknown_30h");
+  writer.writeUInt32LE(0, "TextureDX11:Base:Unknown_38h");
+  writer.writeUInt32LE(0, "TextureDX11:Base:Unknown_3Ch");
+  writer.writeUInt32LE(0, "TextureDX11:Unknown_40h");
+  writer.writeUInt32LE(0, "TextureDX11:Unknown_44h");
+  writer.writeUInt32LE(0, "TextureDX11:Unknown_48h");
+  writer.writeUInt32LE(0, "TextureDX11:Unknown_4Ch");
+  writer.writeUInt16LE(1024, "TextureDX11:Width");
+  writer.writeUInt16LE(1024, "TextureDX11:Height");
+  writer.writeUInt16LE(1024, "TextureDX11:Unknown_54h");
+  writer.writeUInt16LE(512, "TextureDX11:Stride");
+  writer.writeUInt32LE(827611204, "TextureDX11:Format");
+  writer.writeUInt8(0, "TextureDX11:Unknown_5Ch");
+  writer.writeUInt8(0, "TextureDX11:Levels");
+  writer.writeUInt16LE(0, "TextureDX11:Unknown_5Eh");
+  writer.writeUInt32LE(0, "TextureDX11:Unknown_60h");
+  writer.writeUInt32LE(0, "TextureDX11:Unknown_64h");
+  writer.writeUInt32LE(0, "TextureDX11:Unknown_68h");
+  writer.writeUInt32LE(0, "TextureDX11:Unknown_6Ch");
+  writer.writeUInt64LE(0, "TextureDX11:DataPointer");
+  writer.writeUInt32LE(0, "TextureDX11:Unknown_78h");
+  writer.writeUInt32LE(0, "TextureDX11:Unknown_7Ch");
+  writer.writeUInt32LE(0, "TextureDX11:Unknown_80h");
+  writer.writeUInt32LE(0, "TextureDX11:Unknown_84h");
+  writer.writeUInt32LE(0, "TextureDX11:Unknown_88h");
+  writer.writeUInt32LE(0, "TextureDX11:Unknown_8Ch");
+
   //string_r
-  output.write("converted-from-jpg", offset),
-  offset += 18;
+  writer.write("converted-from-jpg", "string_r"),
   //PagesInfo:Unknown_0h
-  output.writeUInt32LE(0, offset);
-  offset += 4;
-  //PagesInfo:Unknown_4h
-  output.writeUInt32LE(0, offset);
-  offset += 4;
-  //PagesInfo:SystemPagesCount
-  output.writeUInt8(1, offset);
-  offset += 1;
-  //PagesInfo:GraphicsPagesCount
-  output.writeUInt8(1, offset);
-  offset += 1;
-  //PagesInfo:Unknown_Ah
-  output.writeUInt16LE(0, offset);
-  offset += 2;
-  //PagesInfo:Unknown_Ch
-  output.writeUInt32LE(0, offset);
-  offset += 4;
-  //PagesInfo:Unknown_10h
-  output.writeUInt32LE(0, offset);
-  offset += 4;
+  writer.writeUInt32LE(0, "PagesInfo:Unknown_0h");
+  writer.writeUInt32LE(0, "PagesInfo:Unknown_4h");
+  writer.writeUInt8(1, "PagesInfo:SystemPagesCount");
+  writer.writeUInt8(1, "PagesInfo:GraphicsPagesCount");
+  writer.writeUInt16LE(0, "PagesInfo:Unknown_Ah");
+  writer.writeUInt32LE(0, "PagesInfo:Unknown_Ch");
+  writer.writeUInt32LE(0, "PagesInfo:Unknown_10h");
   //TexturesDX11:FullData
-  output.write("", offset);
+  output.write("");
 
-  const sample = fs.readFileSync(path.join(rootPath, "/samples/created-with-texturetoolkit2.ytd"), "binary")
-
-  zlib.gzip(output, (err, result) => {
-    const final = Buffer.concat([
-      header,
-      result
-    ])
-    for (let i = 0; i < 100; i++) {
-      console.log(`${Math.floor(i / 4)}: ${final[i]} ${sample[i]}`);
-    }
-  });
+  const final = Buffer.concat([
+    header,
+    output
+  ])
+  // zlib.gzip(output, (err, result) => {
+  //   const final = Buffer.concat([
+  //     header,
+  //     result
+  //   ])
+  //   for (let i = 0; i < 100; i++) {
+  //     console.log(`${Math.floor(i / 4)}: ${final[i]} ${sample[i]}`);
+  //   }
+  // });
 
   //SystemDataLength = 8192
   //GraphicsDataLength = 524288 
