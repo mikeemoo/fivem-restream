@@ -189,7 +189,6 @@ export default async (ddsBuffer: Buffer) => {
   writer.writeUInt64LE(1342178048, "TextureDictionary:PagesInfoPointer:Base");
   writer.writeUInt32LE(0, "TextureDictionary:Unknown_10h");
   writer.writeUInt32LE(0, "TextureDictionary:Unknown_14h");
-  // already going wrong around here somewhere
   writer.writeUInt32LE(1, "TextureDictionary:Unknown_18h");
   writer.writeUInt32LE(0, "TextureDictionary:Unknown_1Ch");
   writer.writeUInt64LE(0, "TextureDictionary:PagesInfoPointer:Base");
@@ -199,8 +198,9 @@ export default async (ddsBuffer: Buffer) => {
   writer.writeUInt64LE(0, "TextureDictionary:Textures:EntriesPointer");
   writer.writeUInt16LE(1, "TextureDictionary:Textures:EntriesCount");
   writer.writeUInt16LE(1, "TextureDictionary:Textures:EntriesCapacity");
-  writer.writeUInt32LE(1, "TextureDictionary:Textures:0");
-  writer.writeUInt32LE(232298502, "Array uint");
+  writer.writeUInt32LE(0, "TextureDictionary:Textures:0");
+  // already going wrong around here somewhere. Presumably because we're not aligning to blocks yet
+  writer.writeUInt32LE(232298502, "Array uint"); // [6, 98, d8, d]
   writer.writeUInt64LE(0, "data_pointers:0");
   writer.writeUInt32LE(1080137272, "TextureDX11:Base:VFT");
   writer.writeUInt32LE(1, "TextureDX11:Base:Unknown_4h");
