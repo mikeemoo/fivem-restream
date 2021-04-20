@@ -1,0 +1,22 @@
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "*": ["types/*"]
+    },
+    "outDir": "./",
+    "noImplicitAny": false,
+    "module": "esnext",
+    "target": "es6",
+    "allowJs": false,
+    "lib": ["es2017"],
+    "types": ["@citizenfx/server", "@types/node"],
+    "moduleResolution": "node",
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "resolveJsonModule": true,
+    "esModuleInterop": true
+  },
+  "include": ["./**/*", "../src/server/to-dds.ts", "../src/server/server.ts"],
+  "exclude": ["**/node_modules", "**/__tests__/*"]
+}
