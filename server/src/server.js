@@ -1,6 +1,7 @@
 import toDDS from './to-dds';
 import { setHttpCallback } from '@citizenfx/http-wrapper';
 import Koa from 'koa';
+import toYtd from './to-ytd';
 
 const app = new Koa();
 app.use(async (ctx) => {
@@ -8,7 +9,9 @@ app.use(async (ctx) => {
   
   ctx.set('Content-disposition', 'attachment; filename=myfile.dds');
   ctx.set('Content-type', 'image/vnd-ms.dds');
-  ctx.body = await toDDS(url);
+
+  const dds = await toDDS(url);;
+  ctx.body = await toYtd(dds);
 });
 
 setHttpCallback(app.callback())
