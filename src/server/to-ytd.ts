@@ -161,3 +161,77 @@
 
 //   return ddsBuffer;
 // }
+
+// const textureDictionaryFile: TextureDictionaryFileWrapper_GTA5_pc = {
+//   textureDictionary (TextureDictionary): {
+//     length: 64,
+//     PagesInfo (PagesInfo_GTA5_pc): {
+//       GraphicsPagesCount: 1,
+//       Length: 20,
+//       SystemPagesCount: 1,
+//       Unknowns: 0,
+//       position: 1342178048
+//     },
+//     PagesInfoPointer: 1342178048,
+//     Position: 1342177280,
+//     TextureNameHashes (ResourceSimpleList64): {
+//       Entries (ResourceSimpleArray): {
+//         Count: 1,
+//         Length: 4,
+//         Position: 1342177408,
+//         Data: [{
+//           Length: 4,
+//           Position: 1342177408,
+//           Value: 232298502
+//         }]
+//       },
+//       Textures (ResourcePointerList64<TextureDX11>): {
+//         Entries (ResourcePointerArray64<TextureDX11>): {
+//           Count: 1,
+//           Length: 8,
+//           Position: 1342177536,
+//           data_items (TextureDX11): [{
+//             Data (TextureData_GTA5_pc): {
+//               FullData (byte[]): [],
+//               Length: 524288,
+//               Position: 1610612736
+//             },
+//             DataPointer: 1610612736,
+//             Format: 827611204,
+//             Height: 1024,
+//             Width: 1024,
+//             Length: 144,
+//             Levels: 1,
+//             Name: {
+//               Length: 19,
+//               Position: 1342177920,
+//               value: "converted-from-jpg"
+//             },
+//             NamePointer: 1342177920,
+//             Position: 1342177664,
+//             Stride: 512,
+//             Unknown_30h: 8388609,
+//             Unknown_4h: 1,
+//             Unknown_54h: 1,
+//             VFT: 1080137272,
+//           }],
+//           data_pointers: [1342177664]
+//         },
+//         EntriesCapacity: 1,
+//         EntriesCount: 1,
+//         EntriesPointer: 1342177536,
+//         Length: 16,
+//         Position: 1342177328
+//       },
+//       EntriesCapacity: 1,
+//       EntriesCount: 1,
+//       EntriesPointer: 1342177408,
+//       Length: 16,
+//       Position: 1342177312
+//     },
+//     Unknown18h: 1,
+//     Unknown4h: 1,
+//     VFT: 1079447504,
+//     Position: 1342177280
+//   }
+// }
