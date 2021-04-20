@@ -1,0 +1,2 @@
+/*! For license information please see client.js.LICENSE.txt */
+(()=>{var __webpack_modules__={"./src/client/client.ts":()=>{eval("\n\n//# sourceURL=webpack://fivem-restream/./src/client/client.ts?")}},__webpack_exports__={};__webpack_modules__["./src/client/client.ts"]()})();

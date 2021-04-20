@@ -1,13 +1,13 @@
 import toDDS from './to-dds';
 import { setHttpCallback } from '@citizenfx/http-wrapper';
 import Koa from 'koa';
-import toYtd from './to-ytd';
+//import toYtd from './to-ytd';
 
 const DEBUG_URL ='http://media.istockphoto.com/photos/seamless-texture-surface-of-the-moon-picture-id108604226';
 
 const fetchAndConvert = async (url) => {
   const dds = await toDDS(url);
-  return await toYtd(dds);
+  return dds;//await toYtd(dds);
 }
 
 const app = new Koa();
