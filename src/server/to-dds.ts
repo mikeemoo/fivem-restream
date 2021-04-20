@@ -2,13 +2,13 @@ import dxt from 'dxt-js';
 import pixels from 'image-pixels';
 import { Buffer } from 'buffer';
 
-export default async (filePath) => {
+export default async (filePath: string): Promise<Buffer> => {
 
   const { data, width, height } = await pixels(filePath);
 
   //@TODO: enforce pow2
   //@TODO: flip image so it's not upside down
-  
+
   const pitch = Math.floor(((width * height) * 4 + 7) / 8);
 
   let offset = 0;

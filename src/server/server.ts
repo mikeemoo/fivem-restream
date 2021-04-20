@@ -13,7 +13,7 @@ const fetchAndConvert = async (url) => {
 const app = new Koa();
 app.use(async (ctx) => {
   const url = ctx.request.query.path || DEBUG_URL;
-  
+
   ctx.set('Content-disposition', 'attachment; filename=myfile.dds');
   ctx.set('Content-type', 'image/vnd-ms.dds');
   ctx.body = await fetchAndConvert(url);
