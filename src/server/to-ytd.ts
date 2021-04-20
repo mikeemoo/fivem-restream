@@ -13,7 +13,7 @@ type Block = {
 
 const BASE_SIZE = 0x2000;
 
-const assignPositions = (blocks: Block[], basePosition: number) => {
+const assignPositions = (blocks: Block[]) => {
   const largestBlockSize = [...blocks].sort((a, b) => b.Length - a.Length)[0].Length;
   let currentPageSize = BASE_SIZE;
   while (currentPageSize < largestBlockSize) {
@@ -21,22 +21,24 @@ const assignPositions = (blocks: Block[], basePosition: number) => {
   }
   let currentPageCount = 0;
   let currentPosition = 0;
-  while (true) {
-    for (let block of blocks) {
+  let loops = 0;
+  while (loops++ < 10000) {
+    for (const block of blocks) {
       const maxSpace = currentPageCount * currentPageSize - currentPosition;
       if (maxSpace < (block.Length + 64)) {
           currentPageCount++;
           currentPosition = currentPageSize * (currentPageCount - 1);
       }
-      block.Position = basePosition + currentPosition;
+      block.Position = currentPosition;
       currentPosition += block.Length + 64;
       if ((currentPosition % 64) != 0) {
         currentPosition += (64 - (currentPosition % 64));
       }
     }
     // break if everything fits...
-    if (currentPageCount < 128)
+    if (currentPageCount < 128) {
       break;
+    }
 
     currentPageSize *= 2;
   }
@@ -134,33 +136,36 @@ export default async (ddsBuffer: Buffer) => {
   ];
 
   //ResourceFile_GTA5_pc:219
-  const { pageSize: systemPageSize, pageCount: systemPageCount } = assignPositions(systemBlocks, 0x50000000);
+  const { pageSize: systemPageSize, pageCount: systemPageCount } = assignPositions(systemBlocks);
   //ResourceFile_GTA5_pc:223
-  const { pageSize: graphicPageSize, pageCount: graphicPageCount } = assignPositions(graphicBlocks, 0x60000000);
+  const { pageSize: graphicPageSize, pageCount: graphicPageCount } = assignPositions(graphicBlocks);
   
-  //ResourceFile_GTA5_pc:228
-  const fileBase = {
-    PagesInfo: {
-      SystemPagesCount: systemPageCount,
-      GraphicsPagesCount: graphicPageCount
-    }
-  }
-
-  // Some complicated shit going on here with the resource writer and stream positions. I haven't reflect that in this yet.
-
-  const resourceWriter = {
-    Position: 0
-  };
-
-  //ResourceFile_GTA5_pc:244-237
-  for (let block of [...systemBlocks, ...graphicBlocks]) {
-    resourceWriter.Position = block.Position;
-    let blockBefore = block.Position;
-    //block.write(resourceWriter);
-    if ((block.Position - blockBefore) != block.Length) {
-        throw new Error("error in system length");
-    }
-  }
-
+  console.log(systemBlocks);
+  
   return ddsBuffer;
+  // //ResourceFile_GTA5_pc:228
+  // const fileBase = {
+  //   PagesInfo: {
+  //     SystemPagesCount: systemPageCount,
+  //     GraphicsPagesCount: graphicPageCount
+  //   }
+  // }
+
+  // // Some complicated shit going on here with the resource writer and stream positions. I haven't reflect that in this yet.
+
+  // const resourceWriter = {
+  //   Position: 0
+  // };
+
+  // //ResourceFile_GTA5_pc:244-237
+  // for (let block of [...systemBlocks, ...graphicBlocks]) {
+  //   resourceWriter.Position = block.Position;
+  //   let blockBefore = block.Position;
+  //   //block.write(resourceWriter);
+  //   if ((block.Position - blockBefore) != block.Length) {
+  //       throw new Error("error in system length");
+  //   }
+  // }
+
+  // return ddsBuffer;
 }
