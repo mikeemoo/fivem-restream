@@ -2,6 +2,9 @@ import { setHttpCallback } from '@citizenfx/http-wrapper';
 import Koa from 'koa';
 import toYtd from './to-ytd';
 
+const cacheKey = RegisterResourceAsset(GetCurrentResourceName(), "test.ytd");
+onNet("getCacheKey", () => emitNet("cacheKey", source, "test.ytd", cacheKey));
+
 //const DEBUG_URL ='http://media.istockphoto.com/photos/seamless-texture-surface-of-the-moon-picture-id108604226';
 const DEBUG_URL = 'https://images-eu.ssl-images-amazon.com/images/I/91-kPSv2efL.png';
 

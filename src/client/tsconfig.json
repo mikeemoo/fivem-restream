@@ -7,10 +7,10 @@
     "outDir": "./",
     "noImplicitAny": false,
     "module": "esnext",
-    "target": "es6",
+    "target": "es2018",
     "allowJs": true,
-    "lib": ["es2017"],
-    "types": ["@citizenfx/client", "@types/node"],
+    "lib": ["es2018"],
+    "types": ["node", "@citizenfx/client"],
     "moduleResolution": "node",
     "resolveJsonModule": true,
     "esModuleInterop": true
