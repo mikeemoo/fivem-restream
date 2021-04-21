@@ -18,6 +18,7 @@ RegisterCommand("replace", async () => {
 		textureDictionary: 'mytesttexture',
 		assetName: 'mytestobject',
 		assetType: 'ASSET_TYPE_DRAWABLE',
+    physicsDictionary: '',
 		lodDist: 60.00000000,
 		specialAttribute: 0
   }]);
@@ -25,7 +26,7 @@ RegisterCommand("replace", async () => {
   const hash = GetHashKey("mytestobject");
   RequestModel(hash);
   while (!HasModelLoaded(hash)) {
-    await new Promise((res) => setTimeout(res, 100));
+    await new Promise((res) => setTimeout(res, 1000));
     console.log('waiting');
   }
 
