@@ -2,8 +2,21 @@ import { setHttpCallback } from '@citizenfx/http-wrapper';
 import Koa from 'koa';
 import toYtd from './to-ytd';
 
-const cacheKey = RegisterResourceAsset(GetCurrentResourceName(), "test2.ytd");
-onNet("getCacheKey", () => emitNet("cacheKey", source, "test2.ytd", cacheKey));
+const streamables = [
+  {
+    modelFileName: "mytestobject.ydr",
+    textureFileName: "mytesttexture.ytd",
+    modelCacheKey: null,
+    textureCacheKey: null
+  }  
+]
+
+streamables.forEach((streamable) => {
+  streamable.modelCacheKey = RegisterResourceAsset(GetCurrentResourceName(), streamable.modelFileName);
+  streamable.textureCacheKey = RegisterResourceAsset(GetCurrentResourceName(), streamable.textureFileName);
+});
+
+onNet("playerJoining", (source: string) => emitNet("streamables", source, streamables));
 
 //const DEBUG_URL ='http://media.istockphoto.com/photos/seamless-texture-surface-of-the-moon-picture-id108604226';
 const DEBUG_URL = 'https://images-eu.ssl-images-amazon.com/images/I/91-kPSv2efL.png';
