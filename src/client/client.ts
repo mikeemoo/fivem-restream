@@ -6,4 +6,6 @@ onNet("cacheKey", async (filename: string, cacheKey: string) => {
   RegisterStreamingFileFromCache(GetCurrentResourceName(), filename, cacheKey);
 });
 
-RegisterCommand("replace", () => AddReplaceTexture("textobjecttxd01", "textobjecttx01", "test", "texture"), false);
+RegisterCommand("replace", () => {
+  AddReplaceTexture("testobjecttxd01", "testobjecttx01", "test", "texture")
+}, false);
