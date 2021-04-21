@@ -2,7 +2,14 @@ import dxt from 'dxt-js';
 import pixels from 'image-pixels';
 import { Buffer } from 'buffer';
 
-export default async (filePath: string): Promise<Buffer> => {
+type DDS = {
+  width: number;
+  height: number;
+  stride: number;
+  data: Buffer
+}
+
+export default async (filePath: string): Promise<DDS> => {
 
   const { data, width, height } = await pixels(filePath);
 
@@ -45,8 +52,13 @@ export default async (filePath: string): Promise<Buffer> => {
     flags
   );
 
-  return Buffer.concat([
-    headerBuffer,
-    Buffer.from(compressed)
-  ]);
+  return {
+    width,
+    height,
+    stride: width,
+    data: Buffer.concat([
+      headerBuffer,
+      Buffer.from(compressed)
+    ])
+  }
 }
