@@ -20,6 +20,20 @@ const getTexture = async (url: string): Promise<Streamable> => {
 
   console.log("getting texture for ", url);
 
+  // if (true === true) {
+  //   const tdCK = RegisterResourceAsset(GetCurrentResourceName(), "testobjecttxd01.ytd");
+  //   const mCK = RegisterResourceAsset(GetCurrentResourceName(), "testobject01.ydr");
+  
+  //   return {
+  //     textureDictionaryName: "testobjecttxd01",
+  //     textureDictionaryCacheKey: tdCK,
+  //     textureDictionaryFileName: "testobjecttxd01.ytd",
+  //     modelName: "testobject01",
+  //     modelCacheKey: mCK,
+  //     modelFileName: "testobject01.ydr"
+  //   };
+  // }
+
   const indexStr = String(nameIndex++);
 
   const textureDictionaryName = `genTdx${indexStr}`;

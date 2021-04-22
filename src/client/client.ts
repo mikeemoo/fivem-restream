@@ -34,6 +34,9 @@ const getTexture = async (url: string): Promise<TextureDefinition> => {
       const streamable = await new Promise<Streamable>((res, rej) => {
         pending[url] = { res, rej };
       });
+
+      console.log("streamable = ", streamable);
+
       console.log("about to register from cache...");
       RegisterStreamingFileFromCache(GetCurrentResourceName(), streamable.modelFileName, streamable.modelCacheKey);
       RegisterStreamingFileFromCache(GetCurrentResourceName(), streamable.textureDictionaryFileName, streamable.textureDictionaryCacheKey);
@@ -52,6 +55,7 @@ const getTexture = async (url: string): Promise<TextureDefinition> => {
         lodDist: 60.00000000,
         specialAttribute: 0
       }]);
+
       console.log("registered archetype...");
 
       const hash = GetHashKey(streamable.modelName);
@@ -59,8 +63,10 @@ const getTexture = async (url: string): Promise<TextureDefinition> => {
       console.log("requested model...");
 
       while (!HasModelLoaded(hash)) {
-        await new Promise((res) => setTimeout(res, 50));
+        await new Promise((res) => setTimeout(res, 1000));
+        console.log("waiting...");
       }
+
       console.log("model is loaded...");
 
       console.log({
@@ -80,7 +86,7 @@ const getTexture = async (url: string): Promise<TextureDefinition> => {
 
 global.exports("getTexture", (url: string, callback: (result: TextureDefinition) => void) => getTexture(url).then(callback));
 
-(async () => {
+setTimeout(async () => {
   const texture = await getTexture("https://upload.wikimedia.org/wikipedia/commons/3/33/Tiling_procedural_textures.jpg");
   console.log(texture);
-})();
+}, 2e3);
