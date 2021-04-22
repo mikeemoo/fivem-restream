@@ -2,6 +2,10 @@ import createYtd from "./create-ytd";
 import createYdr from "./create-ydr";
 import path from "path";
 import fs from "fs";
+import crypto from "crypto";
+
+var shasum = crypto.createHash("sha1");
+
 
 type Streamable = {
   textureDictionaryName: string;
@@ -12,7 +16,6 @@ type Streamable = {
   modelFileName: string;
 };
 
-let nameIndex = 0;
 const resourcePath = GetResourcePath(GetCurrentResourceName());
 const streamables: { [url: string] : Promise<Streamable> } = {};
 
@@ -20,24 +23,24 @@ const getTexture = async (url: string): Promise<Streamable> => {
 
   console.log("getting texture for ", url);
 
-  // if (true === true) {
-  //   const tdCK = RegisterResourceAsset(GetCurrentResourceName(), "testobjecttxd01.ytd");
-  //   const mCK = RegisterResourceAsset(GetCurrentResourceName(), "testobject01.ydr");
+  if (true === true) {
+    const tdCK = RegisterResourceAsset(GetCurrentResourceName(), "testobjecttxd01.ytd");
+    const mCK = RegisterResourceAsset(GetCurrentResourceName(), "testobject01.ydr");
   
-  //   return {
-  //     textureDictionaryName: "testobjecttxd01",
-  //     textureDictionaryCacheKey: tdCK,
-  //     textureDictionaryFileName: "testobjecttxd01.ytd",
-  //     modelName: "testobject01",
-  //     modelCacheKey: mCK,
-  //     modelFileName: "testobject01.ydr"
-  //   };
-  // }
+    return {
+      textureDictionaryName: "testobjecttxd01",
+      textureDictionaryCacheKey: tdCK,
+      textureDictionaryFileName: "testobjecttxd01.ytd",
+      modelName: "testobject01",
+      modelCacheKey: mCK,
+      modelFileName: "testobject01.ydr"
+    };
+  }
 
-  const indexStr = String(nameIndex++);
+  const urlHash = shasum.update(url).digest("hex");
 
-  const textureDictionaryName = `genTdx${indexStr}`;
-  const modelName = `genObj${indexStr}`;
+  const textureDictionaryName = `genTdx${urlHash}`;
+  const modelName = `genObj${urlHash}`;
 
   const textureDictionaryFileName = `cache/${textureDictionaryName}.ytd`;
   const modelFileName = `cache/${modelName}.ydr`;

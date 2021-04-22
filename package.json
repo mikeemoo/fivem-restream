@@ -28,6 +28,7 @@
     "dxt-js": "^0.0.3",
     "image-pixels": "^2.2.2",
     "koa": "^2.13.1",
+    "shorthash": "^0.0.2",
     "webpack-node-externals": "^2.5.2"
   }
 }

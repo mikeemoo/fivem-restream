@@ -1,5 +1,7 @@
-local cacheKey = RegisterResourceAsset(GetCurrentResourceName(), "testobjecttxd01.ytd");
-local cacheKey2 = RegisterResourceAsset(GetCurrentResourceName(), "testobject01.ydr");
+
+local cacheKey = RegisterResourceAsset(GetCurrentResourceName(), "testobjecttxd02.ytd");
+local cacheKey2 = RegisterResourceAsset(GetCurrentResourceName(), "testobject02.ydr");
+
 RegisterNetEvent("cacheRequest")
 print("dds")
 -- The event handler function follows after registering the event first.

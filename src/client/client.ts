@@ -69,14 +69,10 @@ const getTexture = async (url: string): Promise<TextureDefinition> => {
 
       console.log("model is loaded...");
 
-      console.log({
-        dictionaryName: streamable.textureDictionaryName,
-        textureName: "texture"
-      });
       
       resolve({
         dictionaryName: streamable.textureDictionaryName,
-        textureName: "texture"
+        textureName: "testobjecttx01"
       });
     });
   }
@@ -87,6 +83,6 @@ const getTexture = async (url: string): Promise<TextureDefinition> => {
 global.exports("getTexture", (url: string, callback: (result: TextureDefinition) => void) => getTexture(url).then(callback));
 
 setTimeout(async () => {
-  const texture = await getTexture("https://upload.wikimedia.org/wikipedia/commons/3/33/Tiling_procedural_textures.jpg");
-  console.log(texture);
+  const { dictionaryName, textureName } = await getTexture("https://upload.wikimedia.org/wikipedia/commons/3/33/Tiling_procedural_textures.jpg");
+  console.log(GetTextureResolution(dictionaryName, textureName ));
 }, 2e3);
