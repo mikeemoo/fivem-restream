@@ -1,34 +1,74 @@
-import { setHttpCallback } from '@citizenfx/http-wrapper';
-import Koa from 'koa';
-import toYtd from './to-ytd';
+import createYtd from "./create-ytd";
+import createYdr from "./create-ydr";
+import path from "path";
+import fs from "fs";
 
-const streamables = [
-  {
-    modelFileName: "mytestobject.ydr",
-    textureFileName: "mytesttexture.ytd",
-    modelCacheKey: null,
-    textureCacheKey: null
-  }  
-]
+type Streamable = {
+  textureDictionaryName: string;
+  textureDictionaryCacheKey: string;
+  textureDictionaryFileName: string;
+  modelName: string;
+  modelCacheKey: string;
+  modelFileName: string;
+};
 
-streamables.forEach((streamable) => {
-  streamable.modelCacheKey = RegisterResourceAsset(GetCurrentResourceName(), streamable.modelFileName);
-  streamable.textureCacheKey = RegisterResourceAsset(GetCurrentResourceName(), streamable.textureFileName);
+let nameIndex = 0;
+const resourcePath = GetResourcePath(GetCurrentResourceName());
+const streamables: { [url: string] : Promise<Streamable> } = {};
+
+const getTexture = async (url: string): Promise<Streamable> => {
+
+  console.log("getting texture for ", url);
+
+  const indexStr = String(nameIndex++);
+
+  const textureDictionaryName = `genTdx${indexStr}`;
+  const modelName = `genObj${indexStr}`;
+
+  const textureDictionaryFileName = `cache/${textureDictionaryName}.ytd`;
+  const modelFileName = `cache/${modelName}.ydr`;
+
+  const ytdPath = path.join(resourcePath, textureDictionaryFileName);
+  const ydrPath = path.join(resourcePath, modelFileName);
+
+  const ytdBuffer = await createYtd(url);
+  const ydrBuffer = await createYdr(modelName);
+
+  await Promise.all([
+    new Promise((res) => fs.unlink(ytdPath, () => res(null))),
+    new Promise((res) => fs.unlink(ydrPath, () => res(null))),
+  ]);
+
+  await Promise.all([
+    new Promise((res) => fs.writeFile(ytdPath, ytdBuffer, () => res(null))),
+    new Promise((res) => fs.writeFile(ydrPath, ydrBuffer, () => res(null))),
+  ]);
+
+  const textureDictionaryCacheKey = RegisterResourceAsset(GetCurrentResourceName(), textureDictionaryFileName);
+  const modelCacheKey = RegisterResourceAsset(GetCurrentResourceName(), modelFileName);
+
+  return {
+    textureDictionaryName,
+    textureDictionaryCacheKey,
+    textureDictionaryFileName,
+    modelName,
+    modelCacheKey,
+    modelFileName
+  };
+}
+
+onNet("restream:getTexture", async (url: string) => {
+  console.log("restream:getTexture", url);
+  if (!streamables[url]) {
+    streamables[url] = getTexture(url);
+  }
+  return Promise.resolve(streamables[url]).then((streamable) => {
+    emitNet("restream:texture", source, url, streamable);
+  });
 });
 
-onNet("playerJoining", (source: string) => emitNet("streamables", source, streamables));
-
-//const DEBUG_URL ='http://media.istockphoto.com/photos/seamless-texture-surface-of-the-moon-picture-id108604226';
-const DEBUG_URL = 'https://images-eu.ssl-images-amazon.com/images/I/91-kPSv2efL.png';
-
-const app = new Koa();
-app.use(async (ctx) => {
-  const url = (ctx.request.query.url as string) || DEBUG_URL;
-  const dictionaryName = (ctx.request.query.dictionaryName as string) || "txdictionary";
-
-  ctx.set('Content-disposition', `attachment; filename=${dictionaryName}.ytd`);
-  ctx.set('Content-type', 'application/x-binary');
-  ctx.body = await toYtd(url);
+global.exports("createTexture", (url: string) => {
+  if (!streamables[url]) {
+    streamables[url] = getTexture(url);
+  }
 });
-
-setHttpCallback(app.callback());
