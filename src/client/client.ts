@@ -1,53 +1,53 @@
 type PromiseTask = {
-  res: (val: string) => void;
+  res: (val: TextureDefinition) => void;
   rej: (err: Error) => void;
 };
 
 type TextureDefinition = {
   dictionary: string;
-  texture: "texture"
+  texture: string;
 };
 
 const loaded: {
-  [url: string]: Promise<string>
+  [url: string]: Promise<TextureDefinition>
 } = {};
 
 const pending: {
   [url: string]: PromiseTask
 } = {};
 
-onNet("restream:texture", async (url: string, dictionary: string) => {
-  console.log(url, dictionary);
-  while (!HasStreamedTextureDictLoaded(dictionary)) {
-    RequestStreamedTextureDict(dictionary, true);
+onNet("restream:texture", async (url: string, definition: TextureDefinition) => {
+  while (!HasStreamedTextureDictLoaded(definition.dictionary)) {
+    RequestStreamedTextureDict(definition.dictionary, true);
     await new Promise((res) => setTimeout(res, 500));
   }
-  pending[url].res(dictionary);
+  pending[url].res(definition);
 });
 
 const getTexture = async (url: string): Promise<TextureDefinition>  => {
   if (!loaded[url]) {
-    loaded[url] = new Promise<string>((res, rej) => {
+    loaded[url] = new Promise<TextureDefinition>((res, rej) => {
       pending[url] = { res, rej };
       emitNet("restream:load", url);
     });
   }
-
-  return {
-    dictionary: await loaded[url],
-    texture: "texture"
-  }
+  return loaded[url];
 };
 
-const loadTexture = async (url: string, callback?: (definition: TextureDefinition) => void) => {
-  const definition = await getTexture(url);
-  if (callback) {
-    callback(definition);
-  }
-  return definition;
+const loadRemoteTexture = (url: string, callback?: (err: Error | null, definition?: TextureDefinition) => void) => {
+  (async () => {
+    try {
+      const definition = await getTexture(url);
+      if (callback) {
+        callback(null, definition);
+      }
+    }catch (err) {
+      callback(err);      
+    }
+  })();
 }
 
-global.exports("loadTexture", loadTexture);
+global.exports("loadRemoteTexture", loadRemoteTexture);
 
 // RegisterCommand("load-texture", async (_source: string, [url]: [string]) => {
 //   coinst { dictionary, texture } = loadTexture(url);

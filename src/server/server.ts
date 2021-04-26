@@ -42,10 +42,17 @@ onNet("restream:load", async (url: string) => {
   emitNet("restream:texture", _source, url, await loadTexture(url));
 });
 
-global.exports("loadTexture", async (url: string, callback?: (definition: TextureDefinition) => void) => {
-  const definition = await loadTexture(url);
-  if (callback) {
-    callback(definition)
-  }
-  return definition;
+global.exports("loadRemoteTexture", (url: string, callback?: (err: Error | null, definition?: TextureDefinition) => void) => {
+  (async () => {
+    try {
+      const definition = await loadTexture(url);
+      if (callback) {
+        callback(null, definition);
+      }
+    } catch (e) {
+      if (callback) {
+        callback(e);
+      }
+    }
+  })();
 });
