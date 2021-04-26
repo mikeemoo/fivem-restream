@@ -1,91 +1,51 @@
 import createYtd from "./create-ytd";
-import createYdr from "./create-ydr";
 import path from "path";
 import fs from "fs";
 import crypto from "crypto";
 
-var shasum = crypto.createHash("sha1");
-
-
-type Streamable = {
-  textureDictionaryName: string;
-  textureDictionaryCacheKey: string;
-  textureDictionaryFileName: string;
-  modelName: string;
-  modelCacheKey: string;
-  modelFileName: string;
+type TextureDefinition = {
+  dictionary: string;
+  texture: "texture"
 };
 
-const resourcePath = GetResourcePath(GetCurrentResourceName());
-const streamables: { [url: string] : Promise<Streamable> } = {};
+const resourcePath = GetResourcePath("texture-loader");
 
-const getTexture = async (url: string): Promise<Streamable> => {
+const textures: { [url: string]: Promise<TextureDefinition> } = {};
 
-  console.log("getting texture for ", url);
+const loadTexture = async (url: string) => {
+  if (!textures[url]) {
+    textures[url] = new Promise(async (res) => {
 
-  if (true === true) {
-    const tdCK = RegisterResourceAsset(GetCurrentResourceName(), "testobjecttxd01.ytd");
-    const mCK = RegisterResourceAsset(GetCurrentResourceName(), "testobject01.ydr");
-  
-    return {
-      textureDictionaryName: "testobjecttxd01",
-      textureDictionaryCacheKey: tdCK,
-      textureDictionaryFileName: "testobjecttxd01.ytd",
-      modelName: "testobject01",
-      modelCacheKey: mCK,
-      modelFileName: "testobject01.ydr"
-    };
+      const urlHash = crypto.createHash("sha1").update(url).digest("hex").substr(0, 7);
+      const dictionary = `genTdx${urlHash}`;
+      const dictionaryPath = path.join(resourcePath, `stream/${dictionary}.ytd`);
+    
+      if (!fs.existsSync(dictionaryPath)) {
+        const ytdBuffer = await createYtd(url);
+        await new Promise((res) => fs.writeFile(dictionaryPath, ytdBuffer, () => res(null)));
+        StopResource("texture-loader");
+        StartResource("texture-loader");
+      }
+
+      res({
+        dictionary,
+        texture: "texture"
+      });
+    });
   }
 
-  const urlHash = shasum.update(url).digest("hex");
-
-  const textureDictionaryName = `genTdx${urlHash}`;
-  const modelName = `genObj${urlHash}`;
-
-  const textureDictionaryFileName = `cache/${textureDictionaryName}.ytd`;
-  const modelFileName = `cache/${modelName}.ydr`;
-
-  const ytdPath = path.join(resourcePath, textureDictionaryFileName);
-  const ydrPath = path.join(resourcePath, modelFileName);
-
-  const ytdBuffer = await createYtd(url);
-  const ydrBuffer = await createYdr(modelName);
-
-  await Promise.all([
-    new Promise((res) => fs.unlink(ytdPath, () => res(null))),
-    new Promise((res) => fs.unlink(ydrPath, () => res(null))),
-  ]);
-
-  await Promise.all([
-    new Promise((res) => fs.writeFile(ytdPath, ytdBuffer, () => res(null))),
-    new Promise((res) => fs.writeFile(ydrPath, ydrBuffer, () => res(null))),
-  ]);
-
-  const textureDictionaryCacheKey = RegisterResourceAsset(GetCurrentResourceName(), textureDictionaryFileName);
-  const modelCacheKey = RegisterResourceAsset(GetCurrentResourceName(), modelFileName);
-
-  return {
-    textureDictionaryName,
-    textureDictionaryCacheKey,
-    textureDictionaryFileName,
-    modelName,
-    modelCacheKey,
-    modelFileName
-  };
+  return textures[url];
 }
 
-onNet("restream:getTexture", async (url: string) => {
-  console.log("restream:getTexture", url);
-  if (!streamables[url]) {
-    streamables[url] = getTexture(url);
-  }
-  return Promise.resolve(streamables[url]).then((streamable) => {
-    emitNet("restream:texture", source, url, streamable);
-  });
+onNet("restream:load", async (url: string) => {
+  const _source = source;
+  emitNet("restream:texture", _source, url, await loadTexture(url));
 });
 
-global.exports("createTexture", (url: string) => {
-  if (!streamables[url]) {
-    streamables[url] = getTexture(url);
+global.exports("loadTexture", async (url: string, callback?: (definition: TextureDefinition) => void) => {
+  const definition = await loadTexture(url);
+  if (callback) {
+    callback(definition)
   }
+  return definition;
 });

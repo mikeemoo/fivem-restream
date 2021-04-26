@@ -17,6 +17,6 @@
     "resolveJsonModule": true,
     "esModuleInterop": true
   },
-  "include": ["./**/*", "../src/server/to-dds.ts", "../src/server/server.ts"],
+  "include": ["./**/*", "../src/server/server.ts"],
   "exclude": ["**/node_modules", "**/__tests__/*"]
 }

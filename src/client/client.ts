@@ -1,88 +1,56 @@
-RegisterCommand("gothere", () => SetEntityCoords(PlayerPedId(), 269.7664, -320.8406, 46.33287, true, false, false, false), false);
+type PromiseTask = {
+  res: (val: string) => void;
+  rej: (err: Error) => void;
+};
 
 type TextureDefinition = {
-  dictionaryName: string,
-  textureName: string
+  dictionary: string;
+  texture: "texture"
 };
 
-type Streamable = {
-  textureDictionaryName: string;
-  textureDictionaryCacheKey: string;
-  textureDictionaryFileName: string;
-  modelName: string;
-  modelCacheKey: string;
-  modelFileName: string;
-};
+const loaded: {
+  [url: string]: Promise<string>
+} = {};
 
-const pending = {};
-const textures = {};
+const pending: {
+  [url: string]: PromiseTask
+} = {};
 
-onNet("restream:texture", (url: string, streamable: Streamable) => {
-  console.log("got response", url, streamable);
-  if (pending[url]) {
-    pending[url].res(streamable);
-    pending[url] = null;
-    console.log("fired callback");
+onNet("restream:texture", async (url: string, dictionary: string) => {
+  console.log(url, dictionary);
+  while (!HasStreamedTextureDictLoaded(dictionary)) {
+    RequestStreamedTextureDict(dictionary, true);
+    await new Promise((res) => setTimeout(res, 500));
   }
+  pending[url].res(dictionary);
 });
 
-const getTexture = async (url: string): Promise<TextureDefinition> => {
-
-  if (!textures[url]) {
-    emitNet("restream:getTexture", url);
-    textures[url] = new Promise(async (resolve, reject) => {
-      const streamable = await new Promise<Streamable>((res, rej) => {
-        pending[url] = { res, rej };
-      });
-
-      console.log("streamable = ", streamable);
-
-      console.log("about to register from cache...");
-      RegisterStreamingFileFromCache(GetCurrentResourceName(), streamable.modelFileName, streamable.modelCacheKey);
-      RegisterStreamingFileFromCache(GetCurrentResourceName(), streamable.textureDictionaryFileName, streamable.textureDictionaryCacheKey);
-
-      RegisterArchetypes(() => [{
-        flags: 32,
-        bbMin: { x: -2.00000000, y: -0.00000030, z: -2.00000000 },
-        bbMax: { x: 2.00000000, y: 0.00000030, z: 2.000000 },
-        bsCentre: { x: 0.0, y: 0.0, z: 0.0 },
-        bsRadius: 2.82843000,
-        name: streamable.modelName,
-        textureDictionary: streamable.textureDictionaryName,
-        assetName: streamable.modelName,
-        assetType: 'ASSET_TYPE_DRAWABLE',
-        physicsDictionary: '',
-        lodDist: 60.00000000,
-        specialAttribute: 0
-      }]);
-
-      console.log("registered archetype...");
-
-      const hash = GetHashKey(streamable.modelName);
-      RequestModel(hash);
-      console.log("requested model...");
-
-      while (!HasModelLoaded(hash)) {
-        await new Promise((res) => setTimeout(res, 1000));
-        console.log("waiting...");
-      }
-
-      console.log("model is loaded...");
-
-      
-      resolve({
-        dictionaryName: streamable.textureDictionaryName,
-        textureName: "testobjecttx01"
-      });
+const getTexture = async (url: string): Promise<TextureDefinition>  => {
+  if (!loaded[url]) {
+    loaded[url] = new Promise<string>((res, rej) => {
+      pending[url] = { res, rej };
+      emitNet("restream:load", url);
     });
   }
 
-  return Promise.resolve(textures[url]);
+  return {
+    dictionary: await loaded[url],
+    texture: "texture"
+  }
 };
 
-global.exports("getTexture", (url: string, callback: (result: TextureDefinition) => void) => getTexture(url).then(callback));
+const loadTexture = async (url: string, callback?: (definition: TextureDefinition) => void) => {
+  const definition = await getTexture(url);
+  if (callback) {
+    callback(definition);
+  }
+  return definition;
+}
 
-setTimeout(async () => {
-  const { dictionaryName, textureName } = await getTexture("https://upload.wikimedia.org/wikipedia/commons/3/33/Tiling_procedural_textures.jpg");
-  console.log(GetTextureResolution(dictionaryName, textureName ));
-}, 2e3);
+global.exports("loadTexture", loadTexture);
+
+// RegisterCommand("load-texture", async (_source: string, [url]: [string]) => {
+//   coinst { dictionary, texture } = loadTexture(url);
+//   RemoveReplaceTexture("testobjecttxd01", "testobjecttx01");
+//   AddReplaceTexture("testobjecttxd01", "testobjecttx01", dictionary, texture);
+// }, false);
