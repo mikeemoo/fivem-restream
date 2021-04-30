@@ -37,7 +37,7 @@ export default async (url: string): Promise<Buffer> => {
   contentBuffer.writeInt32LE(hashKey,     0x0080);
   contentBuffer.writeUInt16LE(width,      0x01D0);
   contentBuffer.writeUInt16LE(height,     0x01D2);
-  contentBuffer.writeUInt16LE(width / 2,  0x01D6);
+  contentBuffer.writeUInt16LE(Math.floor((( width + 3 ) / 4) * 8),      0x01D6);
   contentBuffer.write(filename,           0x0280);
 
   const flags = dxt.flags.DXT1 | dxt.flags.ColourIterativeClusterFit | dxt.flags.ColourMetricPerceptual;
