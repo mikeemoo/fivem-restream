@@ -3,11 +3,21 @@ import dxt from 'dxt-js';
 import pixels from 'image-pixels';
 
 export default async (url: string): Promise<Buffer> => {
-  
+
   const { data, width, height } = await pixels(url);
 
+  const stride = Math.floor(( width + 3 ) / 4) * 2;
+
+  let realSizeG = 0x2000;
+  let graphicsPagesSizeShift = 0;
+  const graphicsPageSize = stride * height;
+  while (realSizeG != graphicsPageSize) {
+      realSizeG *= 2;
+      graphicsPagesSizeShift++;
+  }
+
   const headerBuffer = Buffer.from([
-    /*0000*/0x52, 0x53, 0x43, 0x37, 0x0D, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x00, 0x04, 0x00, 0x02, 0xD0
+    /*0000*/0x52, 0x53, 0x43, 0x37, 0x0D, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x00, graphicsPagesSizeShift, 0x00, 0x02, 0xD0
   ]);
 
   const contentBuffer = Buffer.from([
@@ -33,14 +43,37 @@ export default async (url: string): Promise<Buffer> => {
 
   const filename = "texture";
   const hashKey = GetHashKey(filename);
-
+  
   contentBuffer.writeInt32LE(hashKey,     0x0080);
   contentBuffer.writeUInt16LE(width,      0x01D0);
   contentBuffer.writeUInt16LE(height,     0x01D2);
-  contentBuffer.writeUInt16LE(Math.floor((( width + 3 ) / 4) * 8),      0x01D6);
+  contentBuffer.writeUInt16LE(stride,     0x01D6);
   contentBuffer.write(filename,           0x0280);
 
   const flags = dxt.flags.DXT1 | dxt.flags.ColourIterativeClusterFit | dxt.flags.ColourMetricPerceptual;
+
+
+  /*
+  reference:
+  
+  SKIP_SIZE = 64;
+  BASE_SIZE = 8192;
+  BLOCK_SIZE = 262144
+  long currentPageSize = 0x2000;
+  while (currentPageSize < largestBlockSize)
+      currentPageSize *= 2;
+
+  maxSpace = currentPageCount * currentPageSize - currentPosition = (0)
+  if (maxSpace < (block.Length + SKIP_SIZE)){
+    currentPageCount++;
+    currentPosition = currentPageSize * (currentPageCount - 1);
+  }
+  currentPosition += block.Length + SKIP_SIZE;
+  if ((currentPosition % ALIGN_SIZE) != 0)
+      currentPosition += (ALIGN_SIZE - (currentPosition % ALIGN_SIZE));
+
+  pageSize = 262144;
+  */
 
   const imageBuffer = dxt.compress(
     data,
@@ -50,6 +83,11 @@ export default async (url: string): Promise<Buffer> => {
   );
 
   return new Promise((res, rej) => {
+    // res(Buffer.concat([
+    //   headerBuffer,
+    //   contentBuffer,
+    //   imageBuffer
+    // ]))
     
     zlib.deflateRaw(Buffer.concat([
       contentBuffer,
